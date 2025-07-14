@@ -290,49 +290,366 @@ class BilliardsApp:
             self.root.destroy()
 
     def setup_ui(self):
-        # Main container - with a bit more bottom padding for small screens
+        # Main container
         main_frame = tk.Frame(self.root, bg='#f0f0f0')
-        main_frame.pack(fill='both', expand=True, padx=10, pady=(10, 15))  # Added more padding at bottom
+        main_frame.pack(fill='both', expand=True, padx=10, pady=(10, 15))
 
-        # Header with title - smaller height
+        # Header with title - redesigned banner
         self.setup_header(main_frame)
 
-        # Table selection buttons - more compact
-        self.setup_table_selection(main_frame)
+        # Navigation tabs
+        self.setup_navigation_tabs(main_frame)
 
-        # Main content area
-        content_frame = tk.Frame(main_frame, bg='#f0f0f0')
-        content_frame.pack(fill='both', expand=True, pady=5)  # Reduced padding
+        # Main content container that will hold different tab contents
+        self.content_container = tk.Frame(main_frame, bg='#f0f0f0')
+        self.content_container.pack(fill='both', expand=True, pady=5)
 
-        # Left Section - Categories and Items
-        self.setup_left_section(content_frame)
+        # Setup the different tab contents
+        self.setup_home_tab()
+        self.setup_product_management_tab()
 
-        # Middle Section - Current Table's Order
-        self.setup_middle_section(content_frame)
-
-        # Right Section - Table Management
-        self.setup_right_section(content_frame)
+        # Start with home tab
+        self.show_home_tab()
 
         # Setup right-click menus
         self.root.after(200, self.setup_right_click_menus)
 
     def setup_header(self, parent):
-        """Setup the main header with more compact styling"""
-        # Smaller header height for compact screens
-        header_frame = tk.Frame(parent, bg='#2196F3', height=45)  # Reduced from 60 to 45
-        header_frame.pack(fill='x', pady=(0, 5))  # Reduced padding
+        """Setup the redesigned main header banner"""
+        # Larger header frame with gradient-like design
+        header_frame = tk.Frame(parent, bg='#1976D2', height=70)  # Increased height and changed color
+        header_frame.pack(fill='x', pady=(0, 10))
         header_frame.pack_propagate(False)
 
-        # Title label with smaller font
-        title_label = tk.Label(header_frame, text="Bilardo Cafe Yönetim Sistemi",
-                               font=('Segoe UI', 18, 'bold'), bg='#2196F3', fg='white')
-        title_label.pack(pady=(10, 0))  # Less padding
+        # Main title with larger font
+        title_label = tk.Label(header_frame, text="🎱 Olbia Bilardo Cafe Yönetim Sistemi",
+                               font=('Segoe UI', 24, 'bold'), bg='#1976D2', fg='white')
+        title_label.pack(pady=15)
 
-        # Date and time display - smaller font
+        # Date and time display - repositioned
         self.datetime_label = tk.Label(header_frame, text="",
                                        font=('Segoe UI', 12),
-                                       bg='#2196F3', fg='white')
-        self.datetime_label.place(relx=0.95, rely=0.5, anchor="e")
+                                       bg='#1976D2', fg='#E3F2FD')
+        self.datetime_label.place(relx=0.95, rely=0.8, anchor="e")
+
+    def setup_navigation_tabs(self, parent):
+        """Setup navigation tabs for Ana Sayfa and Ürün Yönetimi"""
+        tab_frame = tk.Frame(parent, bg='#f0f0f0', height=50)
+        tab_frame.pack(fill='x', pady=(0, 10))
+        tab_frame.pack_propagate(False)
+
+        # Create tab buttons
+        self.tab_buttons = {}
+        
+        # Ana Sayfa (Home) tab
+        home_tab = tk.Button(tab_frame, text="🏠 Ana Sayfa", 
+                            font=('Segoe UI', 14, 'bold'),
+                            bg='#2196F3', fg='white', relief='flat',
+                            width=15, height=2,
+                            command=self.show_home_tab)
+        home_tab.pack(side='left', padx=(0, 5))
+        self.tab_buttons['home'] = home_tab
+
+        # Ürün Yönetimi (Product Management) tab  
+        product_tab = tk.Button(tab_frame, text="📦 Ürün Yönetimi",
+                               font=('Segoe UI', 14, 'bold'), 
+                               bg='#757575', fg='white', relief='flat',
+                               width=15, height=2,
+                               command=self.show_product_management_tab)
+        product_tab.pack(side='left', padx=5)
+        self.tab_buttons['product'] = product_tab
+
+        # Current active tab
+        self.active_tab = 'home'
+
+    def setup_home_tab(self):
+        """Setup the home tab content with tables and ordering"""
+        self.home_frame = tk.Frame(self.content_container, bg='#f0f0f0')
+        
+        # Table selection buttons - more prominent
+        self.setup_table_selection(self.home_frame)
+
+        # Main content area with 3 sections
+        content_frame = tk.Frame(self.home_frame, bg='#f0f0f0')
+        content_frame.pack(fill='both', expand=True, pady=5)
+
+        # Left Section - Categories and Items (same as before)
+        self.setup_left_section(content_frame)
+
+        # Middle Section - Current Table's Order 
+        self.setup_middle_section(content_frame)
+
+        # Right Section - Table Management with redesigned bigger boxes
+        self.setup_right_section_redesigned(content_frame)
+
+    def setup_product_management_tab(self):
+        """Setup the product management tab"""
+        self.product_frame = tk.Frame(self.content_container, bg='#f0f0f0')
+        
+        # Header for product management
+        header = tk.Label(self.product_frame, text="📦 Ürün Yönetimi", 
+                         font=('Segoe UI', 20, 'bold'), bg='#f0f0f0', fg='#333')
+        header.pack(pady=20)
+
+        # Product management content
+        mgmt_content = tk.Frame(self.product_frame, bg='#f0f0f0')
+        mgmt_content.pack(fill='both', expand=True, padx=20)
+
+        # Left side - Categories and Items (reuse existing)
+        self.setup_left_section(mgmt_content)
+
+    def show_home_tab(self):
+        """Show the home tab and hide others"""
+        # Hide all frames
+        if hasattr(self, 'product_frame'):
+            self.product_frame.pack_forget()
+        
+        # Show home frame
+        if hasattr(self, 'home_frame'):
+            self.home_frame.pack(fill='both', expand=True)
+        
+        # Update tab button states
+        self.tab_buttons['home'].config(bg='#2196F3', fg='white')
+        self.tab_buttons['product'].config(bg='#757575', fg='white')
+        self.active_tab = 'home'
+
+    def show_product_management_tab(self):
+        """Show the product management tab and hide others"""
+        # Hide all frames
+        if hasattr(self, 'home_frame'):
+            self.home_frame.pack_forget()
+        
+        # Show product frame
+        if hasattr(self, 'product_frame'):
+            self.product_frame.pack(fill='both', expand=True)
+        
+        # Update tab button states
+        self.tab_buttons['home'].config(bg='#757575', fg='white')
+        self.tab_buttons['product'].config(bg='#2196F3', fg='white')
+        self.active_tab = 'product'
+
+    def setup_right_section_redesigned(self, parent):
+        """Setup redesigned table management section with bigger boxes"""
+        right_frame = tk.Frame(parent, bg='white', relief='raised', bd=2)
+        right_frame.pack(side='right', fill='both', padx=(5, 0), pady=5)
+        right_frame.configure(width=450)  # Increased width for bigger boxes
+
+        # Header
+        header = tk.Label(right_frame, text="🏪 Masa Yönetimi", font=('Segoe UI', 18, 'bold'),
+                          bg='white', fg='#333')
+        header.pack(pady=15)
+
+        # Tables container with scrollbar
+        tables_frame = tk.Frame(right_frame, bg='white')
+        tables_frame.pack(fill='both', expand=True, padx=10, pady=10)
+
+        self.tables_canvas = tk.Canvas(tables_frame, bg='white', highlightthickness=0)
+        tables_scrollbar = ttk.Scrollbar(tables_frame, orient="vertical", command=self.tables_canvas.yview)
+        self.tables_scrollable_frame = tk.Frame(self.tables_canvas, bg='white')
+
+        def configure_tables_scroll():
+            self.tables_canvas.configure(scrollregion=self.tables_canvas.bbox("all"))
+
+        self.tables_scrollable_frame.bind("<Configure>", lambda e: configure_tables_scroll())
+
+        self.tables_canvas_frame = self.tables_canvas.create_window((0, 0), window=self.tables_scrollable_frame,
+                                                                    anchor="nw")
+        self.tables_canvas.configure(yscrollcommand=tables_scrollbar.set)
+
+        def configure_tables_canvas(event):
+            canvas_width = event.width
+            self.tables_canvas.itemconfig(self.tables_canvas_frame, width=canvas_width)
+
+        self.tables_canvas.bind('<Configure>', configure_tables_canvas)
+
+        self.tables_canvas.pack(side="left", fill="both", expand=True)
+        tables_scrollbar.pack(side="right", fill="y")
+
+        # Create redesigned table widgets
+        self.table_widgets = {}
+        self.create_all_redesigned_table_widgets()
+
+        # Fix scrolling
+        def on_tables_mousewheel(event):
+            current_pos = self.tables_canvas.yview()[0]
+            if current_pos == 0 and event.delta > 0:
+                return "break"
+            self.tables_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        self.tables_canvas.bind("<MouseWheel>", on_tables_mousewheel)
+        self.bind_mousewheel_recursively(self.tables_scrollable_frame, on_tables_mousewheel)
+
+        # Add table button
+        add_table_frame = tk.Frame(right_frame, bg='white')
+        add_table_frame.pack(fill='x', padx=10, pady=15)
+
+        tk.Button(add_table_frame, text="➕ Yeni Masa Ekle", command=self.add_new_table,
+                  bg='#4CAF50', fg='white', font=('Segoe UI', 14, 'bold'),
+                  height=2).pack()
+
+    def create_all_redesigned_table_widgets(self):
+        """Create redesigned widgets for all tables with bigger boxes"""
+        for table_id in sorted(self.tables.keys()):
+            self.create_redesigned_table_widget(table_id)
+
+    def create_redesigned_table_widget(self, table_id):
+        """Create a redesigned table widget with bigger size and repositioned elements"""
+        # Bigger table frame
+        table_frame = tk.Frame(self.tables_scrollable_frame, bg='#f8f9fa',
+                               relief='solid', bd=2, height=200)  # Increased height
+        table_frame.pack(fill='x', padx=0, pady=10)  # Increased spacing
+        table_frame.pack_propagate(False)  # Maintain fixed height
+
+        # Add double-click binding
+        table_frame.bind("<Double-1>", lambda e, tid=table_id: self.select_table(tid))
+
+        # Header with quick order buttons in top right
+        header_frame = tk.Frame(table_frame, bg=self.tables[table_id]['color'], height=50)
+        header_frame.pack(fill='x')
+        header_frame.pack_propagate(False)
+        header_frame.bind("<Double-1>", lambda e, tid=table_id: self.select_table(tid))
+
+        # Table name on left side of header
+        table_label = tk.Label(header_frame, text=self.tables[table_id]['name'],
+                               bg=self.tables[table_id]['color'], fg='white', 
+                               font=('Segoe UI', 16, 'bold'))  # Larger font
+        table_label.pack(side='left', padx=15, pady=10)
+        table_label.bind("<Double-1>", lambda e, tid=table_id: self.select_table(tid))
+
+        # Quick order buttons in top right (only emojis)
+        quick_frame = tk.Frame(header_frame, bg=self.tables[table_id]['color'])
+        quick_frame.pack(side='right', padx=15, pady=5)
+
+        # Food emoji button
+        food_btn = tk.Button(quick_frame, text="🍔", font=('Segoe UI', 18),
+                             bg='white', fg='black', relief='flat', bd=0,
+                             width=3, height=1,
+                             command=lambda t=table_id: self.toggle_table_quickadd('Yiyecekler', t))
+        food_btn.pack(side='left', padx=2)
+
+        # Drink emoji button  
+        drink_btn = tk.Button(quick_frame, text="🥤", font=('Segoe UI', 18),
+                              bg='white', fg='black', relief='flat', bd=0,
+                              width=3, height=1,
+                              command=lambda t=table_id: self.toggle_table_quickadd('İçecekler', t))
+        drink_btn.pack(side='left', padx=2)
+
+        # Status in header
+        status_label = tk.Label(header_frame, text="Masa Boş",
+                                bg=self.tables[table_id]['color'], fg='white', 
+                                font=('Segoe UI', 12, 'bold'))
+        status_label.pack(side='right', padx=(0, 15), pady=10)
+        status_label.bind("<Double-1>", lambda e, tid=table_id: self.select_table(tid))
+
+        # Main content area
+        content_frame = tk.Frame(table_frame, bg='#f8f9fa')
+        content_frame.pack(fill='both', expand=True, padx=15, pady=10)
+        content_frame.bind("<Double-1>", lambda e, tid=table_id: self.select_table(tid))
+
+        # Left side - Table info
+        info_frame = tk.Frame(content_frame, bg='#f8f9fa')
+        info_frame.pack(side='left', fill='both', expand=True)
+        info_frame.bind("<Double-1>", lambda e, tid=table_id: self.select_table(tid))
+
+        type_label = tk.Label(info_frame, text=f"Masa Türü: {self.tables[table_id]['type']}",
+                              bg='#f8f9fa', font=('Segoe UI', 11))
+        type_label.pack(anchor='w', pady=2)
+        type_label.bind("<Double-1>", lambda e, tid=table_id: self.select_table(tid))
+
+        rate_label = tk.Label(info_frame, text=f"Saatlik Ücret: {self.tables[table_id]['rate']} TL",
+                              bg='#f8f9fa', font=('Segoe UI', 11))
+        rate_label.pack(anchor='w', pady=2)
+        rate_label.bind("<Double-1>", lambda e, tid=table_id: self.select_table(tid))
+
+        time_label = tk.Label(info_frame, text="Süre: 00:00:00",
+                              bg='#f8f9fa', font=('Segoe UI', 11))
+        time_label.pack(anchor='w', pady=2)
+        time_label.bind("<Double-1>", lambda e, tid=table_id: self.select_table(tid))
+
+        cost_label = tk.Label(info_frame, text="",
+                              bg='#f8f9fa', font=('Segoe UI', 11, 'bold'), fg='#d32f2f')
+        cost_label.pack(anchor='w', pady=2)
+        cost_label.bind("<Double-1>", lambda e, tid=table_id: self.select_table(tid))
+
+        # Right side - Hesap (Account) section
+        hesap_frame = tk.Frame(content_frame, bg='#e8f5e8', relief='solid', bd=1, width=120)
+        hesap_frame.pack(side='right', fill='y', padx=(10, 0))
+        hesap_frame.pack_propagate(False)
+
+        hesap_header = tk.Label(hesap_frame, text="💰 Hesap", font=('Segoe UI', 12, 'bold'),
+                               bg='#e8f5e8', fg='#2e7d32')
+        hesap_header.pack(pady=5)
+
+        # Total cost label
+        total_label = tk.Label(hesap_frame, text="Toplam:\n0 TL",
+                               bg='#e8f5e8', font=('Segoe UI', 10, 'bold'), fg='#d32f2f')
+        total_label.pack(pady=5)
+
+        # Quick items container - initially hidden
+        quick_items_frame = tk.Frame(content_frame, bg='#f8f9fa')
+        # Not packed initially
+
+        # Control buttons at bottom
+        btn_frame = tk.Frame(table_frame, bg='#f8f9fa', height=40)
+        btn_frame.pack(fill='x', padx=15, pady=(0, 10))
+        btn_frame.pack_propagate(False)
+        btn_frame.bind("<Double-1>", lambda e, tid=table_id: self.select_table(tid))
+
+        # Button styling
+        button_height = 1
+        std_button_width = 10
+        icon_button_width = 3
+
+        start_btn = tk.Button(btn_frame, text="▶️ Başlat", bg='#4CAF50', fg='white',
+                              font=('Segoe UI', 11, 'bold'), height=button_height, width=std_button_width,
+                              command=lambda tid=table_id: self.start_table(tid))
+        start_btn.pack(side='left', padx=3)
+
+        stop_btn = tk.Button(btn_frame, text="⏹️ Bitir", bg='#9E9E9E', fg='white',
+                             font=('Segoe UI', 11, 'bold'), height=button_height, width=std_button_width,
+                             command=lambda tid=table_id: self.stop_table(tid),
+                             state='disabled')
+        stop_btn.pack(side='left', padx=3)
+
+        # Add time button (initially hidden)
+        add_time_btn = tk.Button(btn_frame, text="⏰", bg='#4CAF50', fg='white',
+                                 font=('Segoe UI', 12, 'bold'), height=button_height, width=icon_button_width,
+                                 command=lambda tid=table_id: self.add_time_to_table(tid))
+
+        edit_btn = tk.Button(btn_frame, text="✏️ Düzenle", bg='#2196F3', fg='white',
+                             font=('Segoe UI', 11, 'bold'), height=button_height, width=std_button_width,
+                             command=lambda tid=table_id: self.edit_table(tid))
+        edit_btn.pack(side='left', padx=3)
+
+        delete_btn = tk.Button(btn_frame, text="❌", bg='#f44336', fg='white',
+                               font=('Segoe UI', 12, 'bold'), height=button_height, width=icon_button_width,
+                               command=lambda tid=table_id: self.delete_table(tid))
+        delete_btn.pack(side='right', padx=3)
+
+        # Store widget references
+        self.table_widgets[table_id] = {
+            'frame': table_frame,
+            'header': header_frame,
+            'table_label': table_label,
+            'status': status_label,
+            'type': type_label,
+            'rate': rate_label,
+            'time': time_label,
+            'cost': cost_label,
+            'total_label': total_label,
+            'start_btn': start_btn,
+            'stop_btn': stop_btn,
+            'add_time_btn': add_time_btn,
+            'delete_btn': delete_btn,
+            'food_btn': food_btn,
+            'drink_btn': drink_btn,
+            'quick_items_frame': quick_items_frame,
+            'current_billiard_cost': 0.0,
+            'hesap_frame': hesap_frame
+        }
+
+        # Set initial quickadd state
+        self.table_quickadd_shown[table_id] = False
 
     def setup_table_selection(self, parent):
         """Setup table selection buttons"""
@@ -725,7 +1042,7 @@ class BilliardsApp:
 
         # Create table widgets
         self.table_widgets = {}
-        self.create_all_table_widgets()
+        self.create_all_table_widgets_old()
 
         # Fix scrolling to prevent blank space at top
         def on_tables_mousewheel(event):
@@ -1434,12 +1751,12 @@ class BilliardsApp:
         except Exception as e:
             messagebox.showerror("Hata", f"Dosya kaydedilirken hata oluştu: {e}")
 
-    def create_all_table_widgets(self):
-        """Create widgets for all tables"""
+    def create_all_table_widgets_old(self):
+        """Create widgets for all tables (old version for product management)"""
         for table_id in sorted(self.tables.keys()):
-            self.create_table_widget(table_id)
+            self.create_table_widget_old(table_id)
 
-    def create_table_widget(self, table_id):
+    def create_table_widget_old(self, table_id):
         """Create a single table widget with uniform button heights"""
         table_frame = tk.Frame(self.tables_scrollable_frame, bg='#f5f5f5',
                                relief='solid', bd=1)
@@ -1671,7 +1988,7 @@ class BilliardsApp:
                 quick_items_frame.pack(side='right', fill='y', padx=5)
 
     def update_table_quickadd_items(self, table_id, category):
-        """Update quick add items for a table with fixed scrolling"""
+        """Update quick add items for a table with 2 items per row layout"""
         if table_id not in self.table_widgets or 'quick_items_frame' not in self.table_widgets[table_id]:
             return  # Skip if the widget doesn't exist yet
 
@@ -1686,7 +2003,7 @@ class BilliardsApp:
         if category in self.categories:
             # Create a small, scrollable area for quick add items
             canvas_height = 150
-            items_canvas = tk.Canvas(quick_items_frame, bg='#f5f5f5', width=120, height=canvas_height,
+            items_canvas = tk.Canvas(quick_items_frame, bg='#f5f5f5', width=140, height=canvas_height,
                                      highlightthickness=0)
             items_scrollbar = ttk.Scrollbar(quick_items_frame, orient="vertical",
                                             command=items_canvas.yview)
@@ -1703,28 +2020,37 @@ class BilliardsApp:
 
             # Add mousewheel binding for scrolling
             def on_mousewheel(event):
-                # Scroll 2 units for every mouse wheel click
                 items_canvas.yview_scroll(int(-1 * (event.delta / 60)), "units")
 
-            # Bind mousewheel to canvas and all child widgets
             items_canvas.bind("<MouseWheel>", on_mousewheel)
             self.bind_mousewheel_recursively(items_inner_frame, on_mousewheel)
 
             items_canvas.pack(side="left", fill="both", expand=True)
             items_scrollbar.pack(side="right", fill="y")
 
-            # Add items as buttons
-            for item_name, price in self.categories[category].items():
-                btn_frame = tk.Frame(items_inner_frame, bg='#f5f5f5')
-                btn_frame.pack(fill='x', pady=1)
+            # Add items in 2-column layout
+            items = list(self.categories[category].items())
+            current_row_frame = None
+            
+            for index, (item_name, price) in enumerate(items):
+                # Create new row frame every 2 items
+                if index % 2 == 0:
+                    current_row_frame = tk.Frame(items_inner_frame, bg='#f5f5f5')
+                    current_row_frame.pack(fill='x', pady=1)
 
-                btn = tk.Button(btn_frame, text=f"{item_name}", font=('Arial', 8),
-                                bg='#e0e0e0', width=12,
+                # Create button
+                btn = tk.Button(current_row_frame, text=f"{item_name}", font=('Arial', 8),
+                                bg='#e0e0e0', width=6,  # Smaller width for 2-column layout
                                 command=lambda t=table_id, n=item_name, p=price,
                                                c=category: self.add_to_table_from_quickadd(t, n, p, c))
-                btn.pack(side='left', fill='x', expand=True)
+                
+                # Pack buttons side by side
+                if index % 2 == 0:
+                    btn.pack(side='left', fill='x', expand=True, padx=(0, 1))
+                else:
+                    btn.pack(side='left', fill='x', expand=True, padx=(1, 0))
 
-                # Also bind mousewheel to button
+                # Bind mousewheel to button
                 btn.bind("<MouseWheel>", on_mousewheel)
 
             # Make the frame visible and show items
@@ -2356,7 +2682,7 @@ class BilliardsApp:
                     btn.pack(side='left', padx=5)
                     self.table_buttons[new_table_id] = btn
 
-                    self.create_table_widget(new_table_id)
+                    self.create_redesigned_table_widget(new_table_id)
                     self.save_data()
                     dialog.destroy()
 
